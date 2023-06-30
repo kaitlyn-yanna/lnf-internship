@@ -2,6 +2,7 @@
 shot = 54747;
 tstart = 1067;  % 1080
 tstop = 1137;
+nfft = 2000;
 
 %% calc power
 % get upper data
@@ -31,11 +32,11 @@ delta_i_highpass = delta_i - smooth(delta_i, smoothW_points);
 i_total_highpass = i_total - smooth(i_total, smoothW_points);
 
 %
-auxt = chopsignal(i_total_highpass, 1024, 0);
-auxd = chopsignal(delta_i_highpass, 1024, 0);
+auxt = chopsignal(i_total_highpass, nfft, 800);
+auxd = chopsignal(delta_i_highpass, nfft, 800);
 fft_i_total = mean(fft(auxt)');       
 fft_delta_i = mean(fft(auxd)');
-freqs = fftfreqs(1024, fs_kHz);
+freqs = fftfreqs(nfft, fs_kHz);
 freqs = swappy(freqs);
 
 %{
@@ -104,7 +105,7 @@ grid on
 % get background coherence
 
 % Bendat and Piersol have a formula for statistical significance and you can use that to set a cutoff?
-% take one time history and artificially shift it by a # of data points - 1/ 1MHz 
+% take one time history and artificially shift it by a # of data points - 1/1MHz 
 %and then correlate shifted and x2 therefore 0 correlation, there is a finite level not equal to 0 to find correlated noise, anything above this noise is real, emprirical (0.2)
 % A modified method of calculating cross-power spectra has been developed to extract fluctuation data from core measurements. 
 %Since the electronic and photon noise are un- correlated between channels, taking the cross power largely eliminates these contributions to the signal. 
@@ -117,9 +118,9 @@ grid on
 %auxtt = swappy(auxt);
 auxtt = zeros(size(auxt));
 
-for i = 1:134
-    auxtt(:,1) = auxt(:,136);
-    auxtt(:,2) = auxt(:,135);
+for i = 1:114
+    auxtt(:,1) = auxt(:,116);
+    auxtt(:,2) = auxt(:,115);
     auxtt(:,i+2) = auxt(:,i);
 end
 
@@ -134,7 +135,7 @@ fft_t_abs = abs(fft_t);
 fft_d_abs = abs(fft_d);
 denom_cohere = sqrt((mean((fft_t_abs.*fft_t_abs)')).*(mean((fft_d_abs.*fft_d_abs)')));
 bknd_coherence =  num_cohere./denom_cohere;
-%freqs = fftfreqs(1024, fs_kHz);
+%freqs = fftfreqs(nfft, fs_kHz);
 mean_val = mean(bknd_coherence, 'all');
 disp('mean val')
 disp(mean_val)
@@ -148,8 +149,14 @@ grid on
 
 
 % get real coherence 
-fft_t = fft(auxt);  % overlapping and hanning window???
-fft_d = fft(auxd);  % overlapping and hanning window???
+
+% make it a hanning window time
+h = hann(nfft);
+h_auxt = h.*auxt;
+h_auxd = h.*auxd;
+
+fft_t = fft(h_auxt);  % overlapping and hanning window???
+fft_d = fft(h_auxd);  % overlapping and hanning window???
 
 product = fft_t.*conj(fft_d);
 num_cohere = abs(mean(product'));
@@ -158,14 +165,12 @@ fft_d_abs = abs(fft_d);
 denom_cohere = sqrt((mean((fft_t_abs.*fft_t_abs)')).*(mean((fft_d_abs.*fft_d_abs)')));
 coherence =  num_cohere./denom_cohere;
 
-
 figure;
 sgtitle('Total I & Delta I Magnitude-Squared Coherence','fontweight','bold')
 
 subplot(2,2,1)
 noverlap = 800;
-nfft = 1024;
-[Cxy,F] = mscohere(i_total_highpass,delta_i_highpass,hann(nfft),noverlap,1024,fs_kHz,'mimo');
+[Cxy,F] = mscohere(i_total_highpass,delta_i_highpass,hann(nfft),noverlap,nfft,fs_kHz,'mimo');
 %[Cxy,F] = mscohere(i_total_highpass,delta_i_highpass,fs_kHz);
 plot(F,Cxy)
 title('mscohere')
@@ -275,10 +280,10 @@ grid on
 %l_cohere =
 
 % only plot phase differences for a coherence > mean bknd coherence
-selec_pd = zeros(1, 1024);
+selec_pd = zeros(1, nfft);
 for i = 1:length(coherence)
-    if coherence(1, i) > mean(coherence, 'all')
-        selec_pd(i) = phDiff(i);
+    if coherence(1, i) > bknd_coherence(1,i) % mean_val
+        selec_pd(1,i) = phDiff(1,i); 
     end
 end
 
@@ -292,9 +297,7 @@ ylim([0,1])
 ylabel('Coherence [normalized to 1]')
 yyaxis right
 scatter(freqs, selec_pd)
-ylim([-7,7])
-ylabel('Phase Difference [rad]')
+ylim([-90,90])
+ylabel('Phase Difference [degrees]')
 title('Coherence & Meaningful Phase Difference')
 xlabel('Frequency [kHz]')
-
-
