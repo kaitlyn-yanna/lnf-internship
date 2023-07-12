@@ -85,10 +85,11 @@ fft_i_total = fft(auxt);
 fft_delta_i = fft(auxd);
 
 xpower = fft_delta_i.*conj(fft_i_total);
-phdiff = atan(imag(xpower)./real(xpower));
-second = (real(xpower)<0) & (imag(xpower)>0);
-third = (real(xpower)<0) & (imag(xpower)<=0);
-phase = (180/pi)*phdiff + (second - third)*pi;
+%phdiff = atan(imag(xpower)./real(xpower));
+%second = (real(xpower)<0) & (imag(xpower)>0);
+%third = (real(xpower)<0) & (imag(xpower)<=0);
+%phase = (180/pi)*phdiff + (second - third)*pi;
+phase = atan2(imag(xpower),real(xpower));
 av_phase = mean(phase);
 
 figure;
