@@ -181,7 +181,6 @@ grid on
 
 subplot(2,2,3)
 %freqs = swappy(freqs);
-%coherence = swappy(coherence);
 coherence = swappy(coherence);
 plot(freqs, coherence)
 title('van Milligen')
@@ -207,8 +206,8 @@ xlim([0,100])
 ylim([0,1])
 
 %% phase difference
-X = fft_i_total;
-Y = fft_delta_i;
+X = fft(auxt);
+Y = fft(auxd);
 
 % old phase difference estimation
 %{
@@ -222,19 +221,28 @@ xlabel('Frequency (kHz)')
 ylabel('Phase difference (degrees)')
 grid on
 %}
-
+points = 70;
 figure;
+auxt = chopsignal(i_total_highpass, points, 0);
+auxd = chopsignal(delta_i_highpass, points, 0);
+X = fft(auxt);
+Y = fft(auxd);
 xpower = X.*conj(Y);
 phDiff = (180/pi)*atan(imag(xpower)./real(xpower));
-phDiff = swappy(phDiff);
-plot(freqs, phDiff)
+second = (real(xpower)<0) & (imag(xpower)>0);
+third = (real(xpower)<0) & (imag(xpower)<=0);
+phase = (180/pi)*phDiff + (second - third)*pi;
+av_phase = mean(phase);
+phDiff = swappy(av_phase);
+subplot(2, 1, 1)
+plot(freqs, mean_phDiff)
 xlim([0,1000])
+title('Phase difference vs frequency of delta I and I total')
+subplot(2, 1, 2)
+plot(freqs, mean_phDiff)
+xlim([0,100])
 xlabel('Frequency (kHz)')
 ylabel('Phase difference (degrees)')
-title('Phase difference vs frequency of delta I and I total')
-%hold on
-%plot(swappy(freqs), (180/pi)*swappy(PhDiff))
-%hold off
 
 
 % weighted phase difference
@@ -248,8 +256,8 @@ xlim([0,1000])
 xlabel('Frequency (kHz)')
 ylabel('Phase difference (degrees)')
 title('Weighted phase difference vs frequency of delta I and I total')
-%}
 
+% the actual weighted phase difference that i used
 figure;
 delta_i = mean(auxd');
 total_i = mean(auxt');
@@ -261,7 +269,7 @@ xlabel('Frequency (kHz)')
 ylabel('Phase difference (degrees)')
 title('Newer weighted phase difference vs frequency of delta I and I total')
 
-%{
+
 % coherence and phase difference subplotted
 figure;
 subplot(2, 1, 1)
@@ -284,7 +292,9 @@ selec_pd = zeros(1, nfft);
 for i = 1:length(coherence)
     if coherence(1, i) > bknd_coherence(1,i) % mean_val
         selec_pd(1,i) = phDiff(1,i); 
+        
     end
+    %disp(coherence(1, 1019))
 end
 
 figure;
