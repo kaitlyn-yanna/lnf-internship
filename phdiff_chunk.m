@@ -2,14 +2,14 @@
 shot = 54747;
 tstart = 1067;  % 1080
 tstop = 1137;
-nfft = 70; % 2000;
-overlap = 10; % 800;
+%nfft = 70; % 2000;
+%overlap = 10; % 800;
 
 
 %% get that data b 
 % the for loop below gets the data point that corresponds to 18 Hz from 
 % every shot and adds it to an array
-%[eighteen0, eighteen1, eighteen2, eighteen3] = gethistdata()
+
 %{
 i_stop = tstop-tstart; %+1;
 time = linspace(tstart, tstop, 70);
@@ -77,8 +77,8 @@ delta_i_highpass = delta_i - smooth(delta_i, smoothW_points);
 i_total_highpass = i_total - smooth(i_total, smoothW_points);
 
 %
-windows = 2;
-points = 10;
+
+points = 10; % points per window
 auxt = chopsignal(i_total_highpass, points, 8);
 auxd = chopsignal(delta_i_highpass, points, 8);
 fft_i_total = fft(auxt);
