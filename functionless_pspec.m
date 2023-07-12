@@ -228,11 +228,10 @@ auxd = chopsignal(delta_i_highpass, points, 0);
 X = fft(auxt);
 Y = fft(auxd);
 xpower = X.*conj(Y);
-%phDiff = atan(imag(xpower)./real(xpower));
-%second = (real(xpower)<0) & (imag(xpower)>0);
-%third = (real(xpower)<0) & (imag(xpower)<=0);
-%phase = (180/pi)*phDiff + (second - third)*pi;
-phase = atan2(imag(xpower),real(xpower));
+phDiff = atan(imag(xpower)./real(xpower));
+second = (real(xpower)<0) & (imag(xpower)>0);
+third = (real(xpower)<0) & (imag(xpower)<=0);
+phase = (180/pi)*phDiff + (second - third)*pi;
 av_phase = mean(phase);
 phDiff = swappy(av_phase);
 subplot(2, 1, 1)
