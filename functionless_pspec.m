@@ -206,8 +206,6 @@ xlim([0,100])
 ylim([0,1])
 
 %% phase difference
-X = fft(auxt);
-Y = fft(auxd);
 
 % old phase difference estimation
 %{
@@ -221,25 +219,31 @@ xlabel('Frequency (kHz)')
 ylabel('Phase difference (degrees)')
 grid on
 %}
-points = 70;
+points = 2000; %70;
 figure;
 auxt = chopsignal(i_total_highpass, points, 0);
 auxd = chopsignal(delta_i_highpass, points, 0);
 X = fft(auxt);
 Y = fft(auxd);
 xpower = X.*conj(Y);
-phDiff = atan(imag(xpower)./real(xpower));
-second = (real(xpower)<0) & (imag(xpower)>0);
-third = (real(xpower)<0) & (imag(xpower)<=0);
-phase = (180/pi)*phDiff + (second - third)*pi;
-av_phase = mean(phase);
+%phDiff = atan(imag(xpower)./real(xpower));
+%second = (real(xpower)<0) & (imag(xpower)>0);
+%third = (real(xpower)<0) & (imag(xpower)<=0);
+%phase = (180/pi)*phDiff + (second - third)*pi;
+phase = (180/pi)*atan2(imag(xpower),real(xpower));
+av_phase = mean(phase');
 phDiff = swappy(av_phase);
 subplot(2, 1, 1)
-plot(freqs, mean_phDiff)
+plot(freqs, phDiff)
 xlim([0,1000])
 title('Phase difference vs frequency of delta I and I total')
 subplot(2, 1, 2)
-plot(freqs, mean_phDiff)
+yyaxis left
+plot(freqs, phDiff)
+hold on
+yyaxis right
+plot(F,Cxy)
+hold off
 xlim([0,100])
 xlabel('Frequency (kHz)')
 ylabel('Phase difference (degrees)')
