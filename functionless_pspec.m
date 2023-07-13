@@ -240,13 +240,15 @@ title('Phase difference vs frequency of delta I and I total')
 subplot(2, 1, 2)
 yyaxis left
 plot(freqs, phDiff)
+ylabel('Phase difference (degrees)')
 hold on
 yyaxis right
 plot(F,Cxy)
 hold off
 xlim([0,100])
 xlabel('Frequency (kHz)')
-ylabel('Phase difference (degrees)')
+ylabel('Coherence')
+
 
 
 % weighted phase difference
